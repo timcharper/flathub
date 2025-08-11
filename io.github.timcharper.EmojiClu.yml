@@ -1,0 +1,32 @@
+app-id: io.github.timcharper.EmojiClu
+runtime: org.gnome.Platform
+runtime-version: "48"
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: emojiclu
+finish-args:
+  - --socket=fallback-x11
+  - --share=ipc
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=dri
+modules:
+  - name: emojiclu
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/emojiclu/cargo
+        CARGO_NET_OFFLINE: 'true'
+    sources:
+      - type: git
+        url: https://github.com/timcharper/EmojiClu.git
+        tag: v1.0.1
+        commit: 05c82d59fe0f5b83a241c101159d16d0206c1e1e
+      - cargo-sources.json
+    build-commands:
+      - cargo --offline fetch --manifest-path Cargo.toml --verbose
+      - CARGO_OFFLINE=1 make packaging/dist
+      - cp -r packaging/dist/* /app/
+      - install -D packaging/flatpak/metainfo/io.github.timcharper.EmojiClu.appdata.xml /app/share/metainfo/io.github.timcharper.EmojiClu.appdata.xml
